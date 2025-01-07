@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12 # Use the RabbitMQ core image (without management UI)
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMQP protocol port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # Persist RabbitMQ data
+    environment:
+      RABBITMQ_DEFAULT_USER: guest # Default username
+      RABBITMQ_DEFAULT_PASS: guest # Default password
+
+volumes:
+  rabbitmq_data:
