@@ -36,24 +36,44 @@ func main() {
 
 	fmt.Println("Queue is ", q)
 
-	fmt.Println("Name of queue is ",q.Name)
+	fmt.Println("Name of queue is ", q.Name)
 
 	failOnError(err, "Failed to declare a queue")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	body := "Hello World!"
+	channel := make(chan string)
 
-	err = ch.PublishWithContext(ctx,
-		"",
-		q.Name,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
+	go func() {
+		idx := 1
+		for {
+			channel <- fmt.Sprintf("Message %d", idx)
+			//time.Sleep(1 * time.Second)
+			idx++;
+
+		}
+	}()
+
+	go func() {
+		for val := range channel {
+
+			body := val
+
+			err = ch.PublishWithContext(ctx,
+				"",
+				q.Name,
+				false,
+				false,
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(body),
+				})
+			failOnError(err, "Failed to publish a message")
+			log.Printf(" [x] Sent %s\n", body)
+		}
+	}()
+	var ch1 chan struct{}
+	<-ch1
+
 }
